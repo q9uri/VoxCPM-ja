@@ -354,7 +354,6 @@ model = VoxCPM.from_pretrained(
 
 - Increase `r` (LoRA rank)
 - Adjust `alpha` (try `alpha = r/2` or `alpha = r`)
-- Ensure `enable_dit: true` (required for voice cloning)
 - Increase training steps
 - Add more target modules
 

@@ -8,7 +8,7 @@ inflect
 addict
 wetext
 modelscope>=1.22.0
-datasets>=3<4
+datasets<4
 huggingface-hub
 pydantic
 tqdm

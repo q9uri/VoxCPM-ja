@@ -1,3 +1,39 @@
+
+# Voxcpm unoffcial Japanese demo
+
+### Try in google colab!
+[![Open In Colab](https://colab.research.google.com/assets/colab-badge.svg)](https://colab.research.google.com/github/q9uri/VoxCPM-ja/blob/main/docs/voxcpm-1.5-large-ja-demo.ipynb)
+
+
+## large model release note
+- **use local global attention**
+(computing resource output=input^2 to output=input*64+512 )
+  
+- **attn checkpoints option** (save memory for train)  
+
+- **use japanese phonemization ft in lora**  
+like UtterrTune 
+
+- **base llm hidden layer 24 to 64** 
+#### referenced paper
+
+[UtterTune](https://www.arxiv.org/abs/2508.09767)
+
+#### Attention
+I tried ft use original ft setting,   
+but doesn't work.
+and cosyvoice 2 don't works currently cosyvoice github repo 
+
+```
+misc{Kato2025UtterTune,
+  title={UtterTune: UtterTune: LoRA-Based Target-Language Pronunciation Edit and Control in Multilingual Text-to-Speech},
+  author={Kato, Shuhei},
+  year={2025},
+  howpublished={arXiv:2508.09767 [cs.CL]},
+}
+```
+
+
 ## 🎙️ VoxCPM: Tokenizer-Free TTS for Context-Aware Speech Generation and True-to-Life Voice Cloning
 
 

@@ -20,8 +20,7 @@ from voxcpm.core import VoxCPM
 from voxcpm.model.voxcpm import LoRAConfig
 
 # Load config from checkpoint
-lora_ckpt_dir = "./checkpoints/ja-jp-v5-rev-a"
-#lora_ckpt_dir = "./checkpoints/ja-jp-v1-rev-a"
+lora_ckpt_dir = "./checkpoints/1.5-large-ja-rev-a"
 with open(f"{lora_ckpt_dir}/lora_config.json") as f:
     lora_info = json.load(f)
 
@@ -44,7 +43,7 @@ class VoxCPMDemo:
 
         # TTS model (lazy init)
         self.voxcpm_model: Optional[voxcpm.VoxCPM] = None
-        self.default_local_model_dir = "./checkpoints/resized2" #"./checkpoints/voxcpm-1.5"
+        self.default_local_model_dir = "WariHima/voxcpm-1.5-resized-large" #"./checkpoints/voxcpm-1.5"
 
 
     # ---------- Model helpers ----------

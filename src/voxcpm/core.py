@@ -204,12 +204,49 @@ class VoxCPM:
             else:
                 fixed_prompt_cache = None  # will be built from the first inference
             
+
+            if self.text_normalizer is None:
+                from .utils.text_normalize import TextNormalizer
+                self.text_normalizer = TextNormalizer()
+
+            text = self.text_normalizer.normalize(text)
+
             if normalize:
-                if self.text_normalizer is None:
-                    from .utils.text_normalize import TextNormalizer
-                    self.text_normalizer = TextNormalizer()
-                text = self.text_normalizer.normalize(text)
-            
+                prompt_text = self.text_normalizer.normalize(prompt_text)
+
+            text = text.replace("_", "")
+            text = text.replace("!", "")
+            text = text.replace("?", "")
+
+            prompt_text = prompt_text.replace("_", "")
+            prompt_text = prompt_text.replace("!", "")
+            prompt_text = prompt_text.replace("?", "")
+
+            generate_limit = max_len  # モデルの最大長
+            decode_limit_factor = 1
+
+            phone_text = text.replace("'", "")
+            phone_text = phone_text.replace("/", "")
+            len_text = len(phone_text)
+
+            phone_prompt_text = prompt_text.replace("'", "")
+            phone_prompt_text = phone_prompt_text.replace("/", "")
+            len_prompt_text= len(phone_prompt_text)
+
+            # 現在のテキスト長から上限を算出
+            if len_prompt_text < len_text:
+                dynamic_max = (len_text - len_prompt_text) * decode_limit_factor + 10
+            else:
+                dynamic_max = (len_prompt_text - len_text) * decode_limit_factor + 10
+
+            if dynamic_max < 10:
+                dynamic_max = len_text * decode_limit_factor
+            else:
+                dynamic_max = len_text * decode_limit_factor + 5
+
+            max_len = int(min(dynamic_max, generate_limit))
+
+
             generate_result = self.tts_model._generate_with_prompt_cache(
                             target_text=text,
                             prompt_cache=fixed_prompt_cache,

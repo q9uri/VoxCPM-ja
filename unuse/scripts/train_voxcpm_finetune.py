@@ -11,6 +11,7 @@ from typing import Dict, Optional
 
 import argbind
 import torch
+from torch import amp
 from tensorboardX import SummaryWriter
 from torch.optim import AdamW
 from transformers import get_cosine_schedule_with_warmup

@@ -7,20 +7,34 @@ import spaces
 from typing import Optional, Tuple
 from funasr import AutoModel
 from pathlib import Path
+
+from modelscope.pipelines.multi_modal.diffusers_wrapped.devices import device
+
 os.environ["TOKENIZERS_PARALLELISM"] = "false"
 if os.environ.get("HF_REPO_ID", "").strip() == "":
-    os.environ["HF_REPO_ID"] = "openbmb/VoxCPM1.5"
+    os.environ["HF_REPO_ID"] = "./checkpoints/finetune_lora"#"openbmb/VoxCPM1.5"
 
 import voxcpm
+import json
+from voxcpm.core import VoxCPM
+from voxcpm.model.voxcpm import LoRAConfig
 
+# Load config from checkpoint
+lora_ckpt_dir = "./checkpoints/ja-jp-v5-rev-a"
+#lora_ckpt_dir = "./checkpoints/ja-jp-v1-rev-a"
+with open(f"{lora_ckpt_dir}/lora_config.json") as f:
+    lora_info = json.load(f)
+
+base_model = lora_info["base_model"]
+lora_cfg = LoRAConfig(**lora_info["lora_config"])
 
 class VoxCPMDemo:
     def __init__(self) -> None:
         self.device = "cuda" if torch.cuda.is_available() else "cpu"
         print(f"🚀 Running on device: {self.device}", file=sys.stderr)
 
-        # ASR model for prompt text recognition
-        self.asr_model_id = "iic/SenseVoiceSmall"
+        #ASR model for prompt text recognition
+        self.asr_model_id = "./checkpoints/SenseVoiceSmall"
         self.asr_model: Optional[AutoModel] = AutoModel(
             model=self.asr_model_id,
             disable_update=True,
@@ -30,7 +44,8 @@ class VoxCPMDemo:
 
         # TTS model (lazy init)
         self.voxcpm_model: Optional[voxcpm.VoxCPM] = None
-        self.default_local_model_dir = "./models/VoxCPM1.5"
+        self.default_local_model_dir = "./checkpoints/resized2" #"./checkpoints/voxcpm-1.5"
+
 
     # ---------- Model helpers ----------
     def _resolve_model_dir(self) -> str:
@@ -64,7 +79,9 @@ class VoxCPMDemo:
         print("Model not loaded, initializing...", file=sys.stderr)
         model_dir = self._resolve_model_dir()
         print(f"Using model dir: {model_dir}", file=sys.stderr)
-        self.voxcpm_model = voxcpm.VoxCPM(voxcpm_model_path=model_dir)
+        self.voxcpm_model = voxcpm.VoxCPM(voxcpm_model_path=model_dir, lora_config=lora_cfg,
+    lora_weights_path=lora_ckpt_dir, optimize=False)
+
         print("Model loaded successfully.", file=sys.stderr)
         return self.voxcpm_model
 
@@ -107,7 +124,7 @@ class VoxCPMDemo:
             cfg_value=float(cfg_value_input),
             inference_timesteps=int(inference_timesteps_input),
             normalize=do_normalize,
-            denoise=denoise,
+            denoise=False,
         )
         return (current_model.tts_model.sample_rate, wav)
 

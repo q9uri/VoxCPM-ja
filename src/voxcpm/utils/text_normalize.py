@@ -5,6 +5,8 @@ import inflect
 from functools import partial
 from wetext import Normalizer
 
+from ..text.japanese import g2p
+
 chinese_char_pattern = re.compile(r'[\u4e00-\u9fff]+')
 
 # whether contain chinese character
@@ -169,17 +171,18 @@ class TextNormalizer:
     def normalize(self, text, split=False):
         # 去除 Markdown 语法，去除表情符号，去除换行符
         lang = "zh" if contains_chinese(text) else "en"
-        text = clean_text(text)
-        if lang == "zh":
-            text = text.replace("=", "等于") # 修复 ”550 + 320 等于 870 千卡。“ 被错误正则为 ”五百五十加三百二十等于八七十千卡.“
-            if re.search(r'([\d$%^*_+≥≤≠×÷?=])', text): # 避免 英文连字符被错误正则为减
-                text = re.sub(r'(?<=[a-zA-Z0-9])-(?=\d)', ' - ', text) # 修复 x-2 被正则为 x负2
-            text = self.zh_tn_model.normalize(text)
-            text = replace_blank(text)
-            text = replace_corner_mark(text)
-            text = remove_bracket(text)
-        else:
-            text = self.en_tn_model.normalize(text)
-            text = spell_out_number(text, self.inflect_parser)
+        text = g2p(text)
+        #text = clean_text(text)
+        #if lang == "zh":
+        #    text = text.replace("=", "等于") # 修复 ”550 + 320 等于 870 千卡。“ 被错误正则为 ”五百五十加三百二十等于八七十千卡.“
+        #    if re.search(r'([\d$%^*_+≥≤≠×÷?=])', text): # 避免 英文连字符被错误正则为减
+        #        text = re.sub(r'(?<=[a-zA-Z0-9])-(?=\d)', ' - ', text) # 修复 x-2 被正则为 x负2
+        #    text = self.zh_tn_model.normalize(text)
+        #    text = replace_blank(text)
+        #    text = replace_corner_mark(text)
+        #    text = remove_bracket(text)
+        #else:
+        #    text = self.en_tn_model.normalize(text)
+        #    text = spell_out_number(text, self.inflect_parser)
         if split is False:
             return text

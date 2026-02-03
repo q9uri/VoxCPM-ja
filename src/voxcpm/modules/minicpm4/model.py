@@ -1,9 +1,29 @@
 from .config import MiniCPM4Config
 import torch
 import torch.nn as nn
+from torch.utils.checkpoint import checkpoint
 from typing import List, Tuple
 import math
 from .cache import StaticKVCache
+
+from torch.nn.attention.flex_attention import flex_attention, create_block_mask
+
+
+
+# Local + Global のロジック定義
+def local_global_mask(b, h, q_idx, kv_idx):
+    # 1. Local: 直近 512 トークンを見る
+
+    #is_local = (q_idx - kv_idx) < 512
+    is_local = (q_idx - kv_idx) < 64
+    # 2. Global: 最初の 64 トークン（システムプロンプト等）は常に全員が見る
+    #is_global = kv_idx < 64
+    is_global = kv_idx < 8
+
+    # 因果的制約（未来のトークンは見ない）も忘れずに
+    is_causal = q_idx >= kv_idx
+
+    return is_causal & (is_local | is_global)
 
 
 def rms_layernorm(hidden: torch.Tensor, weight: torch.Tensor, eps: float):
@@ -134,6 +154,8 @@ class MiniCPMAttention(nn.Module):
         self.v_proj = nn.Linear(self.hidden_size, self.num_key_value_heads * self.head_dim, bias=False)
         self.o_proj = nn.Linear(self.num_heads * self.head_dim, self.hidden_size, bias=False)
 
+        self.compiled_flex_attn = torch.compile(flex_attention)
+
     def forward(
         self,
         hidden_states: torch.Tensor,
@@ -156,16 +178,43 @@ class MiniCPMAttention(nn.Module):
         
         # ref: https://github.com/pytorch/pytorch/issues/163597
         # there is a bug in MPS for non-contiguous tensors, so we need to make them contiguous
+
         query_states = query_states.contiguous()
         key_states = key_states.contiguous()
         value_states = value_states.contiguous()
-        attn_output = torch.nn.functional.scaled_dot_product_attention(
-            query_states,
-            key_states,
-            value_states,
-            is_causal=is_causal,
-            enable_gqa=True,
-        )
+
+        q_len = query_states.shape[-2]
+        kv_len = key_states.shape[-2]
+
+        # --- Sparse Attention の制御ロジック ---
+        # 512 (Local窓) 以下の場合は Sparse にする意味がないため省く
+        # また、KVキャッシュ使用中の incremental な生成（q_len=1）時も省く
+        use_sparse = q_len > 512 and kv_len > 512
+
+        if use_sparse:
+            block_mask = create_block_mask(
+                local_global_mask,
+                B=None, H=None,
+                Q_LEN=q_len, KV_LEN=kv_len,  # 最大長
+                device="cuda"
+            )
+            # block_maskを渡すと、計算の必要がないブロックを自動的にスキップします
+            attn_output = self.compiled_flex_attn(
+                query=query_states,
+                key=key_states,
+                value=value_states,
+                block_mask=block_mask,
+                enable_gqa=True,
+            )
+        else:
+            attn_output = torch.nn.functional.scaled_dot_product_attention(
+                query_states,
+                key_states,
+                value_states,
+                is_causal=is_causal,
+                enable_gqa=True,
+            )
+
 
         attn_output = attn_output.transpose(1, 2).contiguous()
         attn_output = attn_output.reshape(bsz, q_len, self.num_heads * self.head_dim)
@@ -337,6 +386,7 @@ class MiniCPMModel(nn.Module):
         super().__init__()
         self.vocab_size = config.vocab_size
         self.config = config
+        self.use_checkpoint = config.use_checkpoint
 
         if config.vocab_size > 0:
             self.embed_tokens = nn.Embedding(config.vocab_size, config.hidden_size)
@@ -372,12 +422,21 @@ class MiniCPMModel(nn.Module):
         next_decoder_cache = []
 
         for decoder_layer in self.layers:
-
-            hidden_states, this_cache = decoder_layer(
-                hidden_states,
-                position_emb,
-                is_causal,
-            )
+            if self.use_checkpoint:
+                # checkpoint(関数, 引数1, 引数2, ...) の形式で渡す
+                hidden_states, this_cache = checkpoint(
+                    decoder_layer,
+                    hidden_states,
+                    position_emb,
+                    is_causal,
+                    use_reentrant=False  # Arch Linux+最新PyTorchならFalseを推奨
+                )
+            else:
+                hidden_states, this_cache = decoder_layer(
+                    hidden_states,
+                    position_emb,
+                    is_causal,
+                )
             next_decoder_cache.append(this_cache)
         hidden_states = self.norm(hidden_states)
         return hidden_states, next_decoder_cache

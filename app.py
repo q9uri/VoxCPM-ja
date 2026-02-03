@@ -43,7 +43,7 @@ class VoxCPMDemo:
 
         # TTS model (lazy init)
         self.voxcpm_model: Optional[voxcpm.VoxCPM] = None
-        self.default_local_model_dir = "WariHima/voxcpm-1.5-resized-large" #"./checkpoints/voxcpm-1.5"
+        self.default_local_model_dir = "./checkpoints/WariHima__voxcpm-1.5-resized-large"
 
 
     # ---------- Model helpers ----------
@@ -59,7 +59,7 @@ class VoxCPMDemo:
 
         repo_id = os.environ.get("HF_REPO_ID", "").strip()
         if len(repo_id) > 0:
-            target_dir = os.path.join("models", repo_id.replace("/", "__"))
+            target_dir = os.path.join("./checkpoints", repo_id.replace("/", "__"))
             if not os.path.isdir(target_dir):
                 try:
                     from huggingface_hub import snapshot_download  # type: ignore

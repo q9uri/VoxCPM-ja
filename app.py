@@ -12,7 +12,7 @@ from modelscope.pipelines.multi_modal.diffusers_wrapped.devices import device
 
 os.environ["TOKENIZERS_PARALLELISM"] = "false"
 if os.environ.get("HF_REPO_ID", "").strip() == "":
-    os.environ["HF_REPO_ID"] = "WariHima/1.5-large-ja-rev-a"
+    os.environ["HF_REPO_ID"] = "WariHima/voxcpm-1.5-resized-large"
 
 import voxcpm
 import json

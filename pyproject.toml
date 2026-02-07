@@ -36,13 +36,13 @@ dependencies = [
     "wetext",
     "modelscope>=1.22.0",
     "datasets>=3,<4",
-    "huggingface-hub",
+    "huggingface-hub[hf_xet]",
     "pydantic",
     "tqdm",
     "simplejson",
     "sortedcontainers",
     "soundfile",
-    "librosa",
+    "librosa<0.11",
     "matplotlib",
     "funasr",
     "spaces",
@@ -56,14 +56,24 @@ dependencies = [
     "kanalizer",
     "jaconv",
 
+    "nltk",
+    "google-re2",
+    "dill>=0.3.2",
+    "nltk>=3.1",
+    "deplacy>=2.1.1",
+    "spacy-alignments",
+
     "ffmpeg-python",
     "xxhash",
+    #"descript-audiotools",
     #"librosa",
     #"funasr",
     "accelerate",
-    "onnxruntime<1.22",
+    "onnxruntime",
     "onnx",
     "onnxslim",
+    "json5",
+    "ruamel.yaml"
 ]
 
 [project.optional-dependencies]

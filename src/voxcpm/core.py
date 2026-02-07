@@ -225,13 +225,13 @@ class VoxCPM:
             generate_limit = max_len  # モデルの最大長
             decode_limit_factor = 1
 
-            phone_text = text.replace("'", "")
-            phone_text = phone_text.replace("/", "")
-            len_text = len(phone_text)
+            #phone_text = text.replace("'", "")
+            #phone_text = phone_text.replace("/", "")
+            len_text = len(text)
 
-            phone_prompt_text = prompt_text.replace("'", "")
-            phone_prompt_text = phone_prompt_text.replace("/", "")
-            len_prompt_text= len(phone_prompt_text)
+            #phone_prompt_text = prompt_text.replace("'", "")
+            #phone_prompt_text = phone_prompt_text.replace("/", "")
+            len_prompt_text= len(prompt_text)
 
             # 現在のテキスト長から上限を算出
             if len_prompt_text < len_text:
@@ -240,9 +240,9 @@ class VoxCPM:
                 dynamic_max = (len_prompt_text - len_text) * decode_limit_factor + 10
 
             if dynamic_max < 10:
-                dynamic_max = len_text * decode_limit_factor
+                dynamic_max = len_text * decode_limit_factor + len_text // 2
             else:
-                dynamic_max = len_text * decode_limit_factor + 5
+                dynamic_max = len_text * decode_limit_factor + len_text // 2
 
             max_len = int(min(dynamic_max, generate_limit))
 

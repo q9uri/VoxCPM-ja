@@ -263,7 +263,9 @@ class Esupar(object):
       import spacy_alignments as tokenizations
     v=self.tokenizer(sentence)
     a=v["input_ids"]
-    x,y=tokenizations.get_alignments(self.tokenizer.convert_ids_to_tokens(a),sentence)
+    target_sentence = [sentence] if isinstance(sentence, str) else sentence
+    x, y = tokenizations.get_alignments(self.tokenizer.convert_ids_to_tokens(a), target_sentence)
+    #x,y=tokenizations.get_alignments(self.tokenizer.convert_ids_to_tokens(a),sentence)
     w=[]
     for i,t in enumerate(x):
       if t>[]:

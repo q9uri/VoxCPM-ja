@@ -2,11 +2,13 @@
 
 import re
 from .lib.ko.g2pk4.jamo import h2j, j2hcj
-from .lib.ko import ko_pron
+from .lib.ko.g2pk4 import ko_pron
 from .lib.ko.g2pk4 import G2p
 
 
 from .symbols2 import symbols
+
+
 
 # This is a list of Korean classifiers preceded by pure Korean numerals.
 _korean_classifiers = (
@@ -123,7 +125,7 @@ def korean_to_lazy_ipa(text):
     return text
 
 
-_g2p = G2p()
+_g2p = G2p(tokenizer_model="./checkpoints/1.5-large-ko-rev-a/KoichiYasuoka__roberta-large-korean-morph-upos")
 
 
 def korean_to_ipa(text):
@@ -164,8 +166,8 @@ def g2p(text):
     text = divide_hangul(text)
     #text = fix_g2pk2_error(text)
     text = re.sub(r"([\u3131-\u3163])$", r"\1.", text)
-    # text = "".join([post_replace_ph(i) for i in text])
-    text = [post_replace_ph(i) for i in text]
+    text = "".join([post_replace_ph(i) for i in text])
+    #text = [post_replace_ph(i) for i in text]
     return text
 
 

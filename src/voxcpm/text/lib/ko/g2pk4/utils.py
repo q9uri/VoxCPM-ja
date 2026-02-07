@@ -6,7 +6,6 @@ from ...ja.tokenizer import esupar
 
 
 _ASSETS_DIR = Path(__file__).parent / "assets/g2pk4"
-nlp = esupar.load(model= "ko_morph_large") 
 
 ############## English ##############
 def adjust(arpabets):
@@ -169,7 +168,7 @@ def parse_table():
 
 
 ############## Preprocessing ##############
-def annotate(string):
+def annotate(string, nlp):
 
     tokenized = nlp(string)
 

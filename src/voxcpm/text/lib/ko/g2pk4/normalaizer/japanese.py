@@ -25,7 +25,7 @@
 from ..korean import join_jamos
 import re
 import re2
-from ....ja import pyopenjtalk
+from ....ja.voicevox_g2p import pyopenjtalk
 
 patt_repl = [
     # 외래어 

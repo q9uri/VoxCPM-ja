@@ -20,8 +20,18 @@ from .korean import join_jamos, split_syllables
 from pathlib import Path
 _ASSETS_DIR = Path(__file__).parent / "assets/g2pk4"
 
+
+import sys
+
+esupar_parent = str( Path(__file__).parent.parent.parent / "ja/tokenizer" )
+if esupar_parent not in sys.path:
+    sys.path.insert(0, esupar_parent)
+
+import esupar
+
+
 class G2p(object):
-    def __init__(self,):
+    def __init__(self, tokenizer_model):
         
         
         self.table = parse_table()
@@ -29,6 +39,7 @@ class G2p(object):
         self.cmu = get_dict()
         self.rule2text = get_rule_id2text() # for comments of main rules
         self.idioms_path = (_ASSETS_DIR / "idioms.txt")
+        self.nlp = esupar.load(model=tokenizer_model)
 
     def load_module_func(self, module_name):
         tmp = __import__(module_name, fromlist=[module_name])
@@ -105,7 +116,7 @@ class G2p(object):
             string = convert_jpn(string)
 
         # 3. annotate
-        string = annotate(string)
+        string = annotate(string, self.nlp)
 
 
         # 4. Spell out arabic numbers

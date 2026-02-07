@@ -45,7 +45,6 @@ class VoxCPMDemo:
         self.voxcpm_model: Optional[voxcpm.VoxCPM] = None
         self.default_local_model_dir = "./checkpoints/WariHima__voxcpm-1.5-resized-large"
 
-
     # ---------- Model helpers ----------
     def _resolve_model_dir(self) -> str:
         """
@@ -125,7 +124,9 @@ class VoxCPMDemo:
             normalize=do_normalize,
             denoise=False,
         )
+
         return (current_model.tts_model.sample_rate, wav)
+
 
 
 # ---------- UI Builders ----------

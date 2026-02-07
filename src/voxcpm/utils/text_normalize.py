@@ -5,7 +5,7 @@ import inflect
 from functools import partial
 from wetext import Normalizer
 
-from ..text.japanese import g2p
+from ..text.auto import G2p
 
 chinese_char_pattern = re.compile(r'[\u4e00-\u9fff]+')
 
@@ -167,11 +167,12 @@ class TextNormalizer:
         self.zh_tn_model = Normalizer(lang="zh", operator="tn", remove_erhua=True)
         self.en_tn_model = Normalizer(lang="en", operator="tn")
         self.inflect_parser = inflect.engine()
-    
+        self.g2p = G2p()
+
     def normalize(self, text, split=False):
         # 去除 Markdown 语法，去除表情符号，去除换行符
         lang = "zh" if contains_chinese(text) else "en"
-        text = g2p(text)
+        text = self.g2p(text)
         #text = clean_text(text)
         #if lang == "zh":
         #    text = text.replace("=", "等于") # 修复 ”550 + 320 等于 870 千卡。“ 被错误正则为 ”五百五十加三百二十等于八七十千卡.“

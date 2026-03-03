@@ -63,17 +63,19 @@ dependencies = [
     "deplacy>=2.1.1",
     "spacy-alignments",
 
+    "pypinyin",
+
     "ffmpeg-python",
     "xxhash",
-    #"descript-audiotools",
-    #"librosa",
-    #"funasr",
+
     "accelerate",
     "onnxruntime",
     "onnx",
     "onnxslim",
     "json5",
-    "ruamel.yaml"
+    "ruamel.yaml",
+
+    "pytorch_optimizer"
 ]
 
 [project.optional-dependencies]

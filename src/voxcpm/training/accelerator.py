@@ -124,6 +124,7 @@ class Accelerator:
 
     def step(self, optimizer: torch.optim.Optimizer):
         self.scaler.step(optimizer)
+        #optimizer.step()
 
     def update(self):
         self.scaler.update()

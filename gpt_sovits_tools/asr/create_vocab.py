@@ -1,7 +1,16 @@
+# 例: Python/Hugging Face transformersの場合
+
+# トークナイザをロード
+from pathlib import Path
+from transformers import AutoTokenizer
+tokenizer = AutoTokenizer.from_pretrained("efwkjn/whisper-ja-anime-v0.3")
+
+# 語彙を取得
+vocab = tokenizer.get_vocab()
+
+out = []
 #https://sites.google.com/view/kilin/lecture/UTF-8table
 "\u1D00-\u1D7F" #128文字	音声記号拡張* 添字も含む 	ᴀ ᴁ ᴂ ᴃ ᴄ ᴅ ᴆ ᴇ ᴈ ᴉ ᴊ ᴋ ᴌ ᴍ ᴎ ᴏ
-import re
-
 "\u1D80-\u1DBF" #64文字	音声記号拡張補助* 	ᶀ ᶁ ᶂ ᶃ ᶄ ᶅ ᶆ ᶇ ᶈ ᶉ ᶊ ᶋ ᶌ ᶍ ᶎ ᶏ
 
 GREEK_ALPHABET = "\u0370-\u03FF" #144文字	ギリシア文字及びコプト文字* 	α β γ δ ε ζ η θ ι κ λ μ ν ξ ο π
@@ -38,13 +47,17 @@ SYMBOLS_NUM_A = "\u27C0-\u27EF" #48文字	その他の数学記号A* 	⟀ ⟁ �
 SYMBOLS_NUM_B = "\u2980-\u29FF" #128文字 その他の数学記号B *    ⦀ ⦁ ⦂ ⦃ ⦄ ⦅ ⦆ ⦇ ⦈ ⦉ ⦊ ⦋ ⦌ ⦍ ⦎ ⦏
 SYMBOLS_NUM_ALPHA = "\u01D400-\u01D7FF" #1024文字	数学用英数字記号* 	𝓐 𝓑 𝓒 𝓓 𝓔 𝓕 𝓖 𝓗 𝓘 𝓙 𝓚 𝓛 𝓜 𝓝 𝓞 𝓟
 
+import re
+KANJI_PATTERN = re.compile(rf"[{CJK_KANJI01}{CJK_KANJI02}{CJK_KANJI03}]+")
+for _, token_id in vocab.items():
+    # 1つのIDのみを含むリストをデコード
+    decoded_string = tokenizer.decode([token_id])
+    if KANJI_PATTERN.match(decoded_string):
+        print(f"ID: {token_id}, 文字列: '{decoded_string}'")
+        try:
+            text = f"{decoded_string}\t{token_id}"
+            out.append(text)
+        except:
+            print("not convertable")
 
-HANGUL = "\uAC00-\uD7AF" #11184文字	ハングル音節文字 	가 각 갂 갃 간 갅 갆 갇 갈 갉 갊 갋 갌 갍 갎 갏
-HANGUL_JAMO = "\u3130-\u318F" #96文字  ハングル互換字母    ㄱㄲㄳㄴㄵㄶㄷㄸㄹㄺㄻㄼㄽㄾㄿㅀ
-HANGUL_JAMO_ADDITONAL_A = "\uA960-\uA97F" #32文字  ハングル字母拡張A    ꥠꥡꥢꥣꥤꥥꥦꥧꥨꥩꥪꥫꥬꥭꥮꥯ
-HANGUL_JAMO_ADDITONAL_B = "\uD7B0-\uD7FF" #80文字	ハングル字母拡張B 	ힰ ힱ ힲ ힳ ힴ ힵ ힶ ힷ ힸ ힹ ힺ ힻ ힼ ힽ ힾ ힿ
-
-KOREAN_PATTERN = f"[{HANGUL}{HANGUL_JAMO}{HANGUL_JAMO_ADDITONAL_B}{HANGUL_JAMO_ADDITONAL_A}]"
-
-JAPANESE_PATTERN = f"[{JAPANESE_HIRAGANA}{JAPANESE_KATAKANA}]"
-
+Path("./tools/asr/whisper-ja-anime-v0.3.tsv").write_text("\n".join(out) ,encoding="utf-8")

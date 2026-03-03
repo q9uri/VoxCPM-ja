@@ -1,11 +1,11 @@
 pretrained_path: ./checkpoints/voxcpm-1.5
-train_manifest: ./output/reason-v2-denoised/train.jsonl
-val_manifest: ./output/reason-v2-denoised/val.jsonl
+train_manifest: ./output/zundamon/train.jsonl
+val_manifest: ./output/zundamon/val.jsonl
 sample_rate: 44100
 batch_size: 1
 grad_accum_steps: 1  # Gradient accumulation steps, >1 can increase effective batch size without increasing memory
 num_workers: 1
-num_iters: 12000 #12000 #120000
+num_iters: 3000 #12000 #120000
 log_interval: 10
 valid_interval: 1000
 save_interval: 1000
@@ -14,8 +14,8 @@ weight_decay: 0.01
 warmup_steps: 100
 max_steps: 12000
 max_batch_tokens: 8192  # Example: single batch can have at most 16k tokens, with batch_size=4, each sample can have at most 4096 tokens
-save_path: ./checkpoints/finetune_lora3
-tensorboard: ./logs/finetune_lora
+save_path: ./checkpoints/finetune_zundamon
+tensorboard: ./logs/finetune_zundamon
 lambdas:
   loss/diff: 1.0
   loss/stop: 1.0
@@ -23,9 +23,9 @@ lambdas:
 # LoRA configuration
 lora:
   enable_lm: true
-  enable_dit: true
+  enable_dit: false
   enable_proj: false
-  r: 32               
+  r: 16
   alpha: 16           
   dropout: 0.0
 

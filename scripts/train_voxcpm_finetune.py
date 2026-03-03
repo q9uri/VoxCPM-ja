@@ -1,5 +1,9 @@
 #!/usr/bin/env python3
 
+import os
+os.environ["PYTORCH_ALLOC_CONF"] = "expandable_segments:True"
+os.environ['TOKENIZERS_PARALLELISM'] = 'false'
+
 import sys
 from pathlib import Path
 
@@ -18,9 +22,9 @@ from tensorboardX import SummaryWriter
 import pytorch_optimizer as optim
 from transformers import get_cosine_schedule_with_warmup
 import signal
-import os
+#import os
 
-os.environ['TOKENIZERS_PARALLELISM'] = 'false'
+
 
 try:
     from safetensors.torch import save_file
@@ -297,9 +301,9 @@ def train(
                     accelerator.backward(total_loss)
 
             # After all micro-batches, do unscale / grad_norm / step
-            scaler = getattr(accelerator, "scaler", None)
-            if scaler is not None:
-                scaler.unscale_(optimizer)
+            #scaler = getattr(accelerator, "scaler", None)
+            #if scaler is not None:
+            #    scaler.unscale_(optimizer)
             # Use large max_norm to only compute grad_norm without actual clipping
             grad_norm = torch.nn.utils.clip_grad_norm_(unwrapped_model.parameters(), max_norm=1e9)
 
@@ -317,6 +321,7 @@ def train(
                 tracker.log_metrics(loss_values, split="train")
 
             if val_loader is not None and (step % valid_interval == 0 or step == num_iters - 1):
+                torch.cuda.empty_cache()
                 validate(model, val_loader, batch_processor, accelerator, tracker, lambdas,
                         writer=writer, step=step, val_ds=val_ds, audio_vae=audio_vae_for_gen, 
                         sample_rate=sample_rate, val_texts=val_texts, tokenizer=tokenizer,

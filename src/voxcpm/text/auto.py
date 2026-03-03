@@ -12,6 +12,7 @@ class G2p:
         self.lang = "ja"
         self.g2p_ja = None
         self.g2p_ko = None
+        self.g2p_zh = None
 
     def _lang_select(self, text):
         if self.JAPANESE_PATTERN.search(text):
@@ -19,6 +20,9 @@ class G2p:
 
         elif self.KOREAN_PATTERN.search(text):
             self.lang = "ko"
+
+        else:
+            self.lang = "ja"
 
     def _load_g2p(self, lang):
         if lang == "ja" and self.g2p_ja == None:
@@ -29,12 +33,20 @@ class G2p:
             from .korean import g2p as g2p_ko
             self.g2p_ko = g2p_ko
 
+        elif lang == "zh" and self.g2p_zh == None:
+            from .chinese2 import g2p as g2p_zh
+            self.g2p_zh = g2p_zh
+
     def _g2p(self, text, lang):
         if lang == "ja" and self.g2p_ja != None:
             return self.g2p_ja(text)
 
         elif lang == "ko" and self.g2p_ko != None:
             return self.g2p_ko(text)
+
+        elif lang == "zh" and self.g2p_zh != None:
+            return self.g2p_zh(text)
+
         else:
             return text
 
